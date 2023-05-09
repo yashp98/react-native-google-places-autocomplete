@@ -17,12 +17,18 @@ import {
   Keyboard,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
-  TouchableHighlight,
+  TouchableHighlight as RNTouchableHighlight,
   View,
 } from 'react-native';
+import { TouchableHighlight as GHTouchableHighlight } from 'react-native-gesture-handler';
+
+function getTouchableHighlight() {
+  return Platform.OS === 'ios' ? RNTouchableHighlight : GHTouchableHighlight;
+}
+
+export const TouchableHighlight = getTouchableHighlight();
 
 const defaultStyles = {
   container: {
@@ -55,7 +61,7 @@ const defaultStyles = {
   },
   description: {},
   separator: {
-    height: StyleSheet.hairlineWidth,
+    height: 0.5,
     backgroundColor: '#c8c7cc',
   },
   poweredContainer: {
@@ -122,16 +128,6 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     } else {
       return 'https://maps.googleapis.com/maps/api';
     }
-  };
-
-  const getRequestHeaders = (requestUrl) => {
-    return requestUrl?.headers || {};
-  };
-
-  const setRequestHeaders = (request, headers) => {
-    Object.keys(headers).map((headerKey) =>
-      request.setRequestHeader(headerKey, headers[headerKey]),
-    );
   };
 
   const [stateText, setStateText] = useState('');
@@ -310,7 +306,6 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
       );
 
       request.withCredentials = requestShouldUseWithCredentials();
-      setRequestHeaders(request, getRequestHeaders(props.requestUrl));
 
       request.send();
     } else if (rowData.isCurrentLocation === true) {
@@ -470,7 +465,6 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
       request.open('GET', requestUrl);
 
       request.withCredentials = requestShouldUseWithCredentials();
-      setRequestHeaders(request, getRequestHeaders(props.requestUrl));
 
       request.send();
     } else {
@@ -534,7 +528,6 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
       );
 
       request.withCredentials = requestShouldUseWithCredentials();
-      setRequestHeaders(request, getRequestHeaders(props.requestUrl));
 
       request.send();
     } else {
@@ -820,9 +813,9 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
             placeholder={props.placeholder}
             onFocus={
               onFocus
-                ? (e) => {
+                ? () => {
                     _onFocus();
-                    onFocus(e);
+                    onFocus();
                   }
                 : _onFocus
             }
@@ -830,7 +823,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
               onBlur
                 ? (e) => {
                     _onBlur(e);
-                    onBlur(e);
+                    onBlur();
                   }
                 : _onBlur
             }
@@ -841,7 +834,6 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
           {_renderRightButton()}
         </View>
       )}
-      {props.inbetweenCompo}
       {_getFlatList()}
       {props.children}
     </View>
@@ -861,7 +853,6 @@ GooglePlacesAutocomplete.propTypes = {
   GooglePlacesDetailsQuery: PropTypes.object,
   GooglePlacesSearchQuery: PropTypes.object,
   GoogleReverseGeocodingQuery: PropTypes.object,
-  inbetweenCompo: PropTypes.object,
   isRowScrollable: PropTypes.bool,
   keyboardShouldPersistTaps: PropTypes.oneOf(['never', 'always', 'handled']),
   listEmptyComponent: PropTypes.func,
@@ -892,7 +883,6 @@ GooglePlacesAutocomplete.propTypes = {
   requestUrl: PropTypes.shape({
     url: PropTypes.string,
     useOnPlatform: PropTypes.oneOf(['web', 'all']),
-    headers: PropTypes.objectOf(PropTypes.string),
   }),
   styles: PropTypes.object,
   suppressDefaultStyles: PropTypes.bool,
